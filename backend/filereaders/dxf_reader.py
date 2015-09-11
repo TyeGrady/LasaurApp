@@ -31,32 +31,9 @@ class DXFReader:
         # parsed path data, paths by color
         # {'#ff0000': [[path0, path1, ..], [path0, ..], ..]}
         # Each path is a list of vertices which is a list of two floats.        
-        # using iso pen colors from dxfwrite
-        # 0 is undefined in DXF, it specifies no color, not black
-        # 1 red
-        # 2 yellow
-        # 3 green
-        # 4 cyan
-        # 5 blue
-        # 6 magenta
-        # 7 black
-
-        self.boundarys = {'#FF0000':[],
-                          '#FFFF00':[],
-                          '#00FF00':[],
-                          '#00FFFF':[],
-                          '#0000FF':[],
-                          '#CC33CC':[],
-                          '#000000':[]}
-
-        self.red_boundarys = self.boundarys['#FF0000']
-        self.yellow_boundarys = self.boundarys['#FFFF00']
-        self.green_boundarys = self.boundarys['#00FF00']
-        self.cyan_boundarys = self.boundarys['#00FFFF']
-        self.blue_boundarys = self.boundarys['#0000FF']
-        self.magenta_boundarys = self.boundarys['#CC33CC']
+        self.boundarys = {'#000000':[]}
         self.black_boundarys = self.boundarys['#000000']
-		
+
         self.metricflag = 1
         self.linecount = 0
         self.line = ''
@@ -68,13 +45,52 @@ class DXFReader:
         self.linecount = 0
         self.line = ""
         self.infile = StringIO.StringIO(dxfstring)
-		
-        self.returnBoundarys = {}
-        for color in self.boundarys:
-            if len(self.boundarys[color]) > 0:
-                self.returnBoundarys[color] = self.boundarys[color]
-        return {'boundarys':self.returnBoundarys}
-		
+
+        # assume metric file for now
+        # self.readtosection(9, "$MEASUREMENT")
+        # self.metricflag = int(self.readgroup(70))
+        # if self.metricflag == 0:
+        #     print "Found imperial units indicator -> converting to mm."
+        # else:
+        #     print "Found metric units indicator."
+        #     if self.metricflag != 1:
+        #         print "Invalid $MEASUREMENT value!  Assuming metric units."
+        #         self.metricflag = 1
+
+        ###
+        # self.metricflag = 1
+        #
+        # self.readtosection(2, "ENTITIES")
+        # while 1:
+        #     self.readtocode(0)
+        #     if self.line == "LINE": self.do_line()
+        #     elif self.line == "CIRCLE": self.do_circle()
+        #     elif self.line == "ARC": self.do_arc()
+        #     elif self.line == "LWPOLYLINE": self.do_lwpolyline()
+        #     elif self.line == "SPLINE": self.complain_spline()
+        #     elif self.line == "ENDSEC": break
+        #     else: self.complain_invalid()
+        #
+        # self.infile.close()
+        # print "Done!"
+        #
+        #
+        # return {'boundarys':self.boundarys}
+
+        #l = []
+        #l.append([  50,   50])
+        #l.append([1000,   50])
+        #l.append([1000,  400])
+        #l.append([  50,  400])
+        #l.append([  50,   50])
+
+        #d = {'#000000': [l]}
+        #return {'boundarys': d}
+
+        l = parser.parse(dxfstring, self.tolerance)
+
+        d = {'#000000': l}
+        return {'boundarys': d}
 
     ################
     # Routines to read entries from the DXF file
@@ -111,21 +127,18 @@ class DXFReader:
     # Translate each type of entity (line, circle, arc, lwpolyline)
 
     def do_line(self):
-		color = float(self.readgroup(62))
         x1 = float(self.readgroup(10))
         y1 = float(self.readgroup(20))
         x2 = float(self.readgroup(11))
         y2 = float(self.readgroup(21))
         if self.metricflag == 0:
             x1 = x1*25.4
-            y1 = y1*25.4
+            y1 = y1*25.4        
             x2 = x2*25.4
-            y2 = y2*25.4
-		path = [[x1,y1], [x2,y2]]
-		self.add_path_by_color(color, path)
+            y2 = y2*25.4        
+        self.black_boundarys.append([[x1,y1],[x2,y2]])
 
     def do_circle(self):
-		color = float(self.readgroup(62))
         cx = float(self.readgroup(10))
         cy = float(self.readgroup(20))
         r = float(self.readgroup(40))
@@ -138,10 +151,9 @@ class DXFReader:
         self.addArc(path, cx, cy+r, r, r, 0, 0, 0, cx+r, cy)
         self.addArc(path, cx+r, cy, r, r, 0, 0, 0, cx, cy-r)
         self.addArc(path, cx, cy-r, r, r, 0, 0, 0, cx-r, cy)
-        self.add_path_by_color(color, path)
+        self.black_boundarys.append(path)
 
     def do_arc(self):
-		color = float(self.readgroup(62))
         cx = float(self.readgroup(10))
         cy = float(self.readgroup(20))
         r = float(self.readgroup(40))
@@ -163,13 +175,12 @@ class DXFReader:
         y2 = cy + r*math.sin(theta2)
         path = []
         self.addArc(path, x1, y1, r, r, 0, large_arc_flag, sweep_flag, x2, y2)
-        self.add_path_by_color(color, path)
+        self.black_boundarys.append(path)
 
     def do_lwpolyline(self):
-		color = float(self.readgroup(62))
         numverts = int(self.readgroup(90))
         path = []
-        self.add_path_by_color(color, path)
+        self.black_boundarys.append(path)
         for i in range(0,numverts):
             x = float(self.readgroup(10))
             y = float(self.readgroup(20))
@@ -194,7 +205,6 @@ class DXFReader:
         # plus some recursive sugar for incrementally refining the
         # arc resolution until the requested tolerance is met.
         # http://www.w3.org/TR/SVG/implnote.html#ArcImplementationNotes
-		color = float(self.readgroup(62))
         cp = math.cos(phi)
         sp = math.sin(phi)
         dx = 0.5 * (x1 - x2)
@@ -265,3 +275,8 @@ class DXFReader:
         path.append(c1Init)
         _recursiveArc(t1Init, t2Init, c1Init, c5Init, 0, self.tolerance2)
         path.append(c5Init)
+
+
+
+
+
