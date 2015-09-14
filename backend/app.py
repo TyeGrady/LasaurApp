@@ -12,7 +12,7 @@ from filereaders import read_svg, read_dxf, read_ngc
 
 
 APPNAME = "lasaurapp"
-VERSION = "14.11b+maxy"
+VERSION = "14.11b"
 COMPANY_NAME = "com.nortd.labs"
 SERIAL_PORT = None
 BITSPERSECOND = 57600
@@ -23,7 +23,6 @@ COOKIE_KEY = 'secret_key_jkn23489hsdf'
 FIRMWARE = "LasaurGrbl.hex"
 TOLERANCE = 0.08
 
-print(sys.path)
 
 if os.name == 'nt': #sys.platform == 'win32':
     GUESS_PREFIX = "Arduino"
@@ -507,9 +506,9 @@ def file_reader():
         else:
             print "error: unsupported file format"
 
-        # print boundarys
+        # print boundaries
         jsondata = json.dumps(res)
-        # print "returning %d items as %d bytes." % (len(res['boundarys']), len(jsondata))
+        # print "returning %d items as %d bytes." % (len(res['boundaries']), len(jsondata))
         return jsondata
     return "You missed a field."
 
