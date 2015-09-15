@@ -41,6 +41,7 @@ class DXFParser:
         # 6 magenta
         # 7 black
         # TODO: support up to 255 colors
+        
 
         self.colorLayers = {'#FF0000':[],
                           '#FFFF00':[],
@@ -58,6 +59,23 @@ class DXFParser:
         self.magenta_colorLayer = self.colorLayers['#CC33CC']
         self.black_colorLayer = self.colorLayers['#000000']
         
+        #Original snippets from stefanix dxf reader
+        self.boundarys = {'#FF0000':[], 
+                          '#FFFF00':[],
+                          '#00FF00':[],
+                          '#00FFFF':[],
+                          '#0000FF':[],
+                          '#CC33CC':[],
+                          '#000000':[]}
+        
+        #Added snippets for multiple color 'boundarys'
+        self.red_boundarys = self.boundarys['#FF0000']
+        self.yellow_boundarys = self.boundarys['#FFFF00']
+        self.cyan_boundarys = self.boundarys['#00FFFF']
+        self.blue_boundarys = self.boundarys['#0000FF']
+        self.magenta_boundarys = self.boundarys['#CC33CC']
+        self.green_boundarys = self.boundarys['#00FF00']
+        self.black_boundarys = self.boundarys['#000000']
         
         self.metricflag = 1
         self.linecount = 0
@@ -141,7 +159,10 @@ class DXFParser:
         print "Done!"
         
         #TODO: teach the UI to report units read in the file
-        return {'boundaries':self.returnColorLayers, 'units':self.unitsString}
+        #return {'boundarys':self.returnColorLayers, 'units':self.unitsString}
+        
+        #Original snippets from stefanif dxfreader
+        return {'boundarys':self.boundarys}
 
     ################
     # Translate each type of entity (line, circle, arc, lwpolyline)
@@ -204,19 +225,26 @@ class DXFParser:
                     print("Layer Index:", layer_index)
         
         if layer_index == 1:
-            self.red_colorLayer.append(path)
+            #self.red_colorLayer.append(path)
+            self.red_boundarys.append(path)
         elif layer_index == 2:
-            self.yellow_colorLayer.append(path)
+            #self.yellow_colorLayer.append(path)
+            self.yellow_boundarys.append(path)
         elif layer_index == 3:
-            self.green_colorLayer.append(path)
+            #self.green_colorLayer.append(path)
+            self.green_boundarys.append(path)
         elif layer_index == 4:
-            self.cyan_colorLayer.append(path)
+            #self.cyan_colorLayer.append(path)
+            self.cyan_boundarys.append(path)
         elif layer_index == 5:
-            self.blue_colorLayer.append(path)
+            #self.blue_colorLayer.append(path)
+            self.blue_boundarys.append(path)
         elif layer_index == 6:
-            self.magenta_colorLayer.append(path)
+            #self.magenta_colorLayer.append(path)
+            self.magenta_boundarys.append(path)
         elif layer_index == 7:
-            self.black_colorLayer.append(path)
+            #self.black_colorLayer.append(path)
+            self.black_boundarys.append(path)
         else:
             print("More than 7 layers.... TBD")
             print("Making it magenta...")
