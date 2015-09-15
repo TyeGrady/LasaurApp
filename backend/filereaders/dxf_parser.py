@@ -88,20 +88,32 @@ class DXFParser:
             print("DXF version: {}".format(infile.dxfversion))
             print("header var count: ", len(infile.header))
             print("layer count: ", len(infile.layers)) 
+            for layer in infile.layers.__iter__
+                print("layer name: ", layer.name)
             print("block def count: ", len(infile.blocks))
             print("entitiy count: ", len(infile.entities))
             print("units: ", self.unitsString)
 
         for entity in infile.entities:
             if entity.dxftype == "LINE":
+                if self.debug:
+                    print("Line Entity")
                 self.addLine(entity)
             elif entity.dxftype == "ARC":
+                if self.debug:
+                    print("Arc Entity")
                 self.addArc(entity)
             elif entity.dxftype == "CIRCLE":
+                if self.debug:
+                    print("Circle Entity")
                 self.addCircle(entity)
             elif entity.dxftype == "LWPOLYLINE":
+                if self.debug:
+                    print("LWPolyLine Entity")
                 self.addPolyLine(entity)
             elif entity.dxftype == "SPLINE":
+                if self.debug:
+                    print("Spline Entity")
                 print("TODO ADD: ", entity.dxftype)
                 #self.addSpline(entity)
             else:
@@ -170,6 +182,8 @@ class DXFParser:
         self.add_path_by_color(entity.color, path)
 
     def add_path_by_color(self, color, path):
+        #if self.debug:
+            #print("Color for path:", color)
         if color == 1:
             self.red_colorLayer.append(path)
         elif color == 2:
@@ -276,8 +290,6 @@ class DXFParser:
         _recursiveArc(t1Init, t2Init, c1Init, c5Init, 0, self.tolerance2)
         path.append(c5Init)
 
-
-    
     def unitize(self, value):
         if self.units == 0 or self.units == 1:
             return value * 25.4
