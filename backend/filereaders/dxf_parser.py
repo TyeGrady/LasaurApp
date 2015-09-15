@@ -190,19 +190,18 @@ class DXFParser:
         for point in entity.points:
             path.append([self.unitize(point[0]),
                         self.unitize(point[1])])
-        if self.debug:
-            print("About to add path.")
         self.add_path_by_layer(entity.layer, path)
 
     def add_path_by_layer(self, layer, path):
         print("Trying to add path.")
-        if self.debug:
-            print(Layer_names)
         string = str(layer)
+        list = Layer_names
         for s in list:
             if string in str(s):
-                layer_index = list.index(s)
-                print("Layer Index:", list.index(s))
+                layer_index = list.index(s) + 1
+                if self.debug:
+                    print(layer)
+                    print("Layer Index:", layer_index)
         
         if layer_index == 1:
             self.red_colorLayer.append(path)
