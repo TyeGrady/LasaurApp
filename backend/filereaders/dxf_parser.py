@@ -58,6 +58,7 @@ class DXFParser:
         self.magenta_colorLayer = self.colorLayers['#CC33CC']
         self.black_colorLayer = self.colorLayers['#000000']
         
+        
         self.metricflag = 1
         self.linecount = 0
         self.line = ''
@@ -88,54 +89,57 @@ class DXFParser:
             print("DXF version: {}".format(infile.dxfversion))
             print("header var count: ", len(infile.header))
             print("layer count: ", len(infile.layers)) 
-            n = len(infile.layers)
-            print("number of layers", n)
-            Layer_names = infile.layers.names()
+            print("block def count: ", len(infile.blocks))
+            print("entitiy count: ", len(infile.entities))
+            print("units: ", self.unitsString)
+        
+        #Iterate through and print layers name
+        global Layer_names
+        Layer_names = infile.layers.names()
+        if self.debug:
             print("Layer Names: ", Layer_names)
             i = 1
+            n = len(infile.layers)
             while i < n:
                 print("iter value:", i)
                 print("layer name: ", Layer_names[i])
                 i = i + 1
-            print("block def count: ", len(infile.blocks))
-            print("entitiy count: ", len(infile.entities))
-            print("units: ", self.unitsString)
-
+        
         for entity in infile.entities:
             if entity.dxftype == "LINE":
                 if self.debug:
                     print("Line Entity")
+                    print("Entity Layer:", entity.layer)
                 self.addLine(entity)
             elif entity.dxftype == "ARC":
                 if self.debug:
                     print("Arc Entity")
+                    print("Entity Layer:", entity.layer)
                 self.addArc(entity)
             elif entity.dxftype == "CIRCLE":
                 if self.debug:
                     print("Circle Entity")
+                    print("Entity Layer:", entity.layer)
                 self.addCircle(entity)
             elif entity.dxftype == "LWPOLYLINE":
                 if self.debug:
                     print("LWPolyLine Entity")
+                    print("Entity Layer:", entity.layer)
                 self.addPolyLine(entity)
             elif entity.dxftype == "SPLINE":
                 if self.debug:
                     print("Spline Entity")
+                    print("Entity Layer:", entity.layer)
                 print("TODO ADD: ", entity.dxftype)
                 #self.addSpline(entity)
             else:
                 if self.debug:
                     print("unknown entity: ", entity.dxftype)
+                    print("Entity Layer:", entity.layer)
 
                 
         print "Done!"
         
-        self.returnColorLayers = {}
-        for color in self.colorLayers:
-            if len(self.colorLayers[color]) > 0:
-                if self.debug:
-                    print ("returning color ", color)
-                self.returnColorLayers[color] = self.colorLayers[color]
         #TODO: teach the UI to report units read in the file
         return {'boundaries':self.returnColorLayers, 'units':self.unitsString}
 
@@ -147,7 +151,7 @@ class DXFParser:
                  self.unitize(entity.start[1])],
                 [self.unitize(entity.end[0]),
                  self.unitize(entity.end[1])]]
-        self.add_path_by_color(entity.color, path)
+        self.add_path_by_layer (entity.layer, path)
 
     def addArc(self, entity):
         cx = self.unitize(entity.center[0])
@@ -168,7 +172,7 @@ class DXFParser:
         y2 = cy + r * math.sin(theta2)
         path = []
         self.makeArc(path, x1, y1, r, r, 0, large_arc_flag, sweep_flag, x2, y2)
-        self.add_path_by_color(entity.color, path)
+        self.add_path_by_layer (entity.layer, path)
 
     def addCircle(self, entity):
         cx = self.unitize(entity.center[0])
@@ -179,39 +183,46 @@ class DXFParser:
         self.makeArc(path, cx, cy+r, r, r, 0, 0, 0, cx+r, cy)
         self.makeArc(path, cx+r, cy, r, r, 0, 0, 0, cx, cy-r)
         self.makeArc(path, cx, cy-r, r, r, 0, 0, 0, cx-r, cy)
-        self.add_path_by_color(entity.color, path)
+        self.add_path_by_layer (entity.layer, path)
 
     def addPolyLine(self, entity):
         path = []
         for point in entity.points:
             path.append([self.unitize(point[0]),
                         self.unitize(point[1])])
-        self.add_path_by_color(entity.color, path)
+        if self.debug:
+            print("About to add path.")
+        self.add_path_by_layer(entity.layer, path)
 
-    def add_path_by_color(self, color, path):
-        #if self.debug:
-            #print("Color for path:", color)
-        if color == 1:
+    def add_path_by_layer(self, layer, path):
+        print("Trying to add path.")
+        if self.debug:
+            print(Layer_names)
+        string = str(layer)
+        for s in list:
+            if string in str(s):
+                layer_index = list.index(s)
+                print("Layer Index:", list.index(s))
+        
+        if layer_index == 1:
             self.red_colorLayer.append(path)
-        elif color == 2:
+        elif layer_index == 2:
             self.yellow_colorLayer.append(path)
-        elif color == 3:
+        elif layer_index == 3:
             self.green_colorLayer.append(path)
-        elif color == 4:
+        elif layer_index == 4:
             self.cyan_colorLayer.append(path)
-        elif color == 5:
+        elif layer_index == 5:
             self.blue_colorLayer.append(path)
-        elif color == 6:
-            self.magenta_colorLayer.append(path) 
-        #TODO: where does color 256 get defined?
-        elif color == 7 or color == 256:
+        elif layer_index == 6:
+            self.magenta_colorLayer.append(path)
+        elif layer_index == 7:
             self.black_colorLayer.append(path)
         else:
-            #TODO: we need a better way to handle this
-            print("don't know what to do with color ", color, " assigning it to red")
-            self.red_colorLayer.append(path)
+            print("More than 7 layers.... TBD")
+            print("Making it magenta...")
+            self.magenta_colorLayer.append(path)
             
-
     def complain_spline(self):
         print "Encountered a SPLINE at line", self.linecount
         print "This program cannot handle splines at present."
