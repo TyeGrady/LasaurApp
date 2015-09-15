@@ -88,8 +88,15 @@ class DXFParser:
             print("DXF version: {}".format(infile.dxfversion))
             print("header var count: ", len(infile.header))
             print("layer count: ", len(infile.layers)) 
-            for layer in infile.layers.__iter__
-                print("layer name: ", layer.name)
+            n = len(infile.layers)
+            print("number of layers", n)
+            Layer_names = infile.layers.names()
+            print("Layer Names: ", Layer_names)
+            i = 1
+            while i < n:
+                print("iter value:", i)
+                print("layer name: ", Layer_names[i])
+                i = i + 1
             print("block def count: ", len(infile.blocks))
             print("entitiy count: ", len(infile.entities))
             print("units: ", self.unitsString)
