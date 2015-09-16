@@ -4,11 +4,7 @@
 # Open Source by the terms of the Gnu Public License (GPL3) or higher.
 
 import os, sys
-import subprocess
 
-def run(s):
-    print(s)
-    subprocess.check_call(s, shell=True)
 
 
 # How to use this file
@@ -83,24 +79,24 @@ def build():
     COMPILE = AVRGCCAPP + " -Wall -Os -DF_CPU=" + CLOCK + " -mmcu=" + DEVICE + " -I. -ffunction-sections" + " --std=c99"
 
     for fileobj in OBJECTS:
-      run('%(compile)s -c %(obj)s.c -o %(obj)s.o' % {'compile': COMPILE, 'obj':fileobj});
+      os.system('%(compile)s -c %(obj)s.c -o %(obj)s.o' % {'compile': COMPILE, 'obj':fileobj});
   
-    run('%(compile)s -o main.elf %(alldoto)s  -lm' % {'compile': COMPILE, 'alldoto':".o ".join(OBJECTS)+'.o'});
+    os.system('%(compile)s -o main.elf %(alldoto)s  -lm' % {'compile': COMPILE, 'alldoto':".o ".join(OBJECTS)+'.o'});
 
-    #run('rm -f %(product).hex' % {'product':BUILDNAME})
+    #os.system('rm -f %(product).hex' % {'product':BUILDNAME})
 
-    run('%(objcopy)s -j .text -j .data -O ihex main.elf %(product)s.hex' % {'objcopy': AVROBJCOPYAPP, 'obj':fileobj, 'product':BUILDNAME});
+    os.system('%(objcopy)s -j .text -j .data -O ihex main.elf %(product)s.hex' % {'objcopy': AVROBJCOPYAPP, 'obj':fileobj, 'product':BUILDNAME});
 
-    run('%(size)s *.hex *.elf *.o' % {'size':AVRSIZEAPP})
+    os.system('%(size)s *.hex *.elf *.o' % {'size':AVRSIZEAPP})
 
-    # run('%(objdump)s -t -j .bss main.elf' % {'objdump':AVROBJDUMPAPP})
+    # os.system('%(objdump)s -t -j .bss main.elf' % {'objdump':AVROBJDUMPAPP})
 
-    run('%(dude)s -c %(programmer)s -b %(bps)s %(serial_option)s -p %(device)s -C %(dudeconf)s -Uflash:w:%(product)s.hex:i' % {'dude':AVRDUDEAPP, 'programmer':PROGRAMMER, 'bps':BITRATE, 'serial_option':SERIAL_OPTION, 'device':DEVICE, 'dudeconf':AVRDUDECONFIG, 'product':BUILDNAME})
-    # run('%(dude)s -c %(programmer)s -b %(bps)s -P %(port)s -p %(device)s -C %(dudeconf)s -B 10 -F -U flash:w:%(product)s.hex:i' % {'dude':AVRDUDEAPP, 'programmer':PROGRAMMER, 'bps':BITRATE, 'port':SERIAL_PORT, 'device':DEVICE, 'dudeconf':AVRDUDECONFIG, 'product':BUILDNAME})
+    os.system('%(dude)s -c %(programmer)s -b %(bps)s %(serial_option)s -p %(device)s -C %(dudeconf)s -Uflash:w:%(product)s.hex:i' % {'dude':AVRDUDEAPP, 'programmer':PROGRAMMER, 'bps':BITRATE, 'serial_option':SERIAL_OPTION, 'device':DEVICE, 'dudeconf':AVRDUDECONFIG, 'product':BUILDNAME})
+    # os.system('%(dude)s -c %(programmer)s -b %(bps)s -P %(port)s -p %(device)s -C %(dudeconf)s -B 10 -F -U flash:w:%(product)s.hex:i' % {'dude':AVRDUDEAPP, 'programmer':PROGRAMMER, 'bps':BITRATE, 'port':SERIAL_PORT, 'device':DEVICE, 'dudeconf':AVRDUDECONFIG, 'product':BUILDNAME})
 
 
     # fuse setting taken over from Makefile for reference
-    #run('%(dude)s -U hfuse:w:0xd2:m -U lfuse:w:0xff:m' % {'dude':AVRDUDEAPP})
+    #os.system('%(dude)s -U hfuse:w:0xd2:m -U lfuse:w:0xff:m' % {'dude':AVRDUDEAPP})
 
     ## clean after upload
     print "Cleaning up build files."
