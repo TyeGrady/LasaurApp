@@ -208,9 +208,21 @@ class DXFParser:
 
     def addPolyLine(self, entity):
         path = []
+        i = 1
         for point in entity.points:
+            if i == 1:
+                Start_Point_x = point[0]
+                Start_Point_y = point[1]
+                if self.debug:
+                    print("Poly Start X:", Start_Point_x)
+                    print("Poly Start Y:", Start_Point_y)
             path.append([self.unitize(point[0]),
                         self.unitize(point[1])])
+            i = i + 1
+        #Adding section to close polylines
+        if entity.is_closed:
+            path.append([self.unitize(Start_Point_x),
+                        self.unitize(Start_Point_y)])
         self.add_path_by_layer(entity.layer, path)
 
     def add_path_by_layer(self, layer, path):
