@@ -27,10 +27,10 @@ def read_dxf(dxf_string, tolerance, optimize=True):
     if optimize:
         optimize_all(parse_results['boundarys'], tolerance)
     # # flip y-axis
-    #for paths in parse_results['boundarys'].items():
-    #    for path in paths:
-    #        for vertex in path:
-    #            vertex[1] = 610-vertex[1]
+    for paths in parse_results['boundarys'].items():
+        for path in paths:
+            for vertex in path:
+                vertex[1] = 610-vertex[1]
     return parse_results
 
 
